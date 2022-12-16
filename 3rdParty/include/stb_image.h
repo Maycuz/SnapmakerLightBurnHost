@@ -3889,7 +3889,7 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
             stbi_uc *y = coutput[0];
             if (z->s->img_n == 3) {
                if (is_rgb) {
-                  for (i=0; i < z->s->img_x; ++i) {
+                   for (i=0; i < z->s->img_x; ++i) {
                      out[0] = y[i];
                      out[1] = coutput[1][i];
                      out[2] = coutput[2][i];
@@ -3897,7 +3897,7 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
                      out += n;
                   }
                } else {
-                  z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
+                  z->YCbCr_to_RGB_kernel(out, y, coutput[2], coutput[1], z->s->img_x, n);
                }
             } else if (z->s->img_n == 4) {
                if (z->app14_color_transform == 0) { // CMYK

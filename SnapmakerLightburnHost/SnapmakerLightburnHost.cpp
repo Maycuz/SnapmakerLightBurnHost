@@ -19,7 +19,6 @@
 
 using namespace std;
 
-const string ipAddress = "192.168.178.89";
 std::filesystem::path targetFile;
 
 string GetTimeStamp()
@@ -96,17 +95,24 @@ CURLcode getImageFromSnapmaker(string ipAddress)
     return result;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc <= 1)
+    {
+        std::cout << "Please pass an IP address as the first argument." << std::endl;
+        exit(1);
+    }
+
+    auto ipAddress = string(argv[1]);
+
     targetFile = std::filesystem::current_path() / "latest.jpg";
-    auto saveFile = std::filesystem::current_path() / "latest1.jpg";
     scCamera cam = scCreateCamera(1024, 1280, 60);
 
-    std::cout << GetTimeStamp() << "Virtual camera has started" << std::endl;
+    std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {}", ipAddress) << std::endl;
     std::cout << GetTimeStamp() << "Press RETURN to request a new image from base position (warning: will move bed & laser!)" << std::endl;
 
     int width, height, comp;
-    auto image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, STBI_rgb);
+    auto image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
 
     for (;;)
     {
@@ -118,12 +124,12 @@ int main()
 
             if (CURLE_OK == getImageFromSnapmaker(ipAddress))
             {
-                image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, STBI_rgb);
+                image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
 
                 if (stbi_failure_reason() && (string("bad png sig").compare(stbi_failure_reason()) != 0))
                     std::cout << GetTimeStamp() << "\t-> STBI: " << stbi_failure_reason() << std::endl;
 
-                std::cout << GetTimeStamp() << "Image sent to virtual camera" << std::endl;
+                std::cout << GetTimeStamp() << "Image sent to virtual camera. Press ENTER to request a new image." << std::endl;
             }
         }
     }
