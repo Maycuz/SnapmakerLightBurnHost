@@ -1,0 +1,6 @@
+﻿  softcam_installer.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 108 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  softcam_installer.vcxproj -> C:\Users\trist\Documents\workspace\softcam\examples\softcam_installer\x64\Release\softcam_installer.exe
