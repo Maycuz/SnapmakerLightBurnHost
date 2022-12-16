@@ -6,6 +6,8 @@ Tool that allows you to use your Snapmaker 2.0 10W laser in LightBurn. Based on 
 2. https://github.com/nothings/stb: ```stb_image.h``` for simple JPEG loading (note: modified with RGB -> BGR swap).
 3. libcurl, libssh, openssl, zlib
 
+Note: Above libraries (static and dynamic) are included in this project for ease-of-use, but can be built separately if desired.
+
 # Usage
 1. Build project (or download binary release & extract).
 2. Run ```3rdParty\installer\softcam\RegisterSoftcam.bat``` to install softcam.
