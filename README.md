@@ -11,7 +11,7 @@ Note: Above libraries (static and dynamic) are included in this project for ease
 # Usage
 1. Build project (or download binary release & extract).
 2. Run ```3rdParty\installer\softcam\RegisterSoftcam.bat``` to install softcam.
-3. In your favorite terminal: run ```SnapmakerLightburnHost <your-snapmaker-ip>```.
+3. In your favorite terminal: run **```SnapmakerLightburnHost.exe <your-snapmaker-ip>```**.
 4. In LightBurn settings, verify that ```Default Capture System``` is selected under ```Camera Capture System```.
 5. In LightBurn, select ```DirectShow Softcam``` as your camera.
 6. Press ```ENTER``` to request a new image from your Snapmaker 10W laser camera.
