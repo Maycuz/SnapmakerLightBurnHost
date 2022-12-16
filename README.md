@@ -1,5 +1,5 @@
 # Snapmaker LightBurn Host
-Tool that allows you to use your Snapmaker 2.0 10W laser in LightBurn. Based on the method described by Slynold (https://forum.snapmaker.com/t/working-camera-capture-with-lightburn/28397).
+Tool that allows you to use your Snapmaker 2.0 10W laser in LightBurn. Based on the method described by **Slynold** (https://forum.snapmaker.com/t/working-camera-capture-with-lightburn/28397).
 
 # Dependencies (included or NuGet)
 1. https://github.com/tshino/softcam: virtual DirectShow camera.
