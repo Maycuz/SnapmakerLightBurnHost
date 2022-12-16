@@ -1,11 +1,48 @@
 // SnapmakerLightburnHost.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+
+#include "softcam.h"
+#include "stb_image.h"
+
+#include "curl/curl.h"
+
+using namespace std;
+
+//const string ipAddress = "192.168.178.89";
+//
+//void getImageFromSnapmaker(CURL *curlInstance, string ipAddress)
+//{
+//
+//}
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    //CURL* curl;
+    //CURLcode result;
+    //string readBuffer;
+
+    FILE* fileStream;
+    fopen_s(&fileStream, "C:\\Users\\trist\\Desktop\\example.jpg", "rb");
+
+    int width, height, comp;
+
+    auto image = stbi_load_from_file(fileStream, &width, &height, &comp, 0);
+    
+    scCamera cam = scCreateCamera(width, height, 1);
+
+    std::cout << "Virtual camera has started" << std::endl;
+
+    for (;;)
+    {
+        scSendFrame(cam, image);
+    }
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
