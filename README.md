@@ -3,7 +3,7 @@ Tool that allows you to use your Snapmaker 2.0 10W laser in LightBurn. Based on 
 
 # Dependencies (included or NuGet)
 1. https://github.com/tshino/softcam: virtual DirectShow camera.
-2. https://github.com/nothings/stb: ```stb_image.h``` for simple JPEG loading.
+2. https://github.com/nothings/stb: ```stb_image.h``` for simple JPEG loading (note: modified with RGB -> BGR swap).
 3. libcurl, libssh, openssl, zlib
 
 # Usage
