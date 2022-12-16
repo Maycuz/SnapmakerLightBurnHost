@@ -28,7 +28,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
+    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -50,12 +50,16 @@
     <Linkage-openssl>static</Linkage-openssl>
     <Linkage-zlib>static</Linkage-zlib>
     <Linkage-libssh2>static</Linkage-libssh2>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Linkage-curl>static</Linkage-curl>
     <Linkage-openssl>static</Linkage-openssl>
     <Linkage-zlib>static</Linkage-zlib>
     <Linkage-libssh2>static</Linkage-libssh2>
+    <CopyLocalDeploymentContent>true</CopyLocalDeploymentContent>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -76,17 +80,24 @@
       <AdditionalLibraryDirectories>..\3rdParty\lib;..\packages\curl.7.30.0.2\build\native\lib\v110\x64\Release\dynamic;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>softcam.lib;libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;CURL_STATICLIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\3rdParty\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -105,6 +116,24 @@
     <ClInclude Include="..\3rdParty\include\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\3rdParty\lib\softcam.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\packages\curl.redist.7.30.0.2\build\native\bin\v110\x64\Release\dynamic\libcurl.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\packages\libssh2.redist.1.4.3.1\build\native\bin\v110\x64\Release\dynamic\cdecl\libssh2.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\packages\openssl.redist.1.0.1.21\build\native\bin\v110\x64\Release\dynamic\cdecl\libeay32.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\packages\openssl.redist.1.0.1.21\build\native\bin\v110\x64\Release\dynamic\cdecl\ssleay32.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
+    <None Include="..\packages\zlib.redist.1.2.8.1\build\native\bin\v110\x64\Release\dynamic\cdecl\zlib.dll">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
