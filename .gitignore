@@ -364,4 +364,4 @@ FodyWeavers.xsd
 /SnapmakerLightburnHost/latest.jpg
 
 # softcam installer
-!3rdParty/installer
+!3rdParty/installer/*
