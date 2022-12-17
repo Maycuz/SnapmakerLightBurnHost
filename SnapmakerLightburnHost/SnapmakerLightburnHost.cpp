@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
     scCamera cam = scCreateCamera(1024, 1280, 60);
 
     std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {}", ipAddress) << std::endl;
-    std::cout << GetTimeStamp() << "Press RETURN to request a new image from base position (warning: will move bed & laser!)" << std::endl;
+    std::cout << GetTimeStamp() << "Press ENTER to request a new image from base position (warning: will move bed & laser!)" << std::endl;
 
     int width, height, comp;
     auto image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
