@@ -21,3 +21,6 @@ Note: Above libraries (static and dynamic) are included in this project for ease
 6. Press ```SPACE``` to perform a material thickness measurement with your Snapmaker 10W laser camera.
 
 ![image](https://user-images.githubusercontent.com/6267267/208189576-714fb93c-bdfe-40b4-af4a-2651109a5746.png)
+
+![afbeelding](https://user-images.githubusercontent.com/6267267/208304937-57a387e2-99f0-4d7e-a830-0ab8959cb236.png)
+
