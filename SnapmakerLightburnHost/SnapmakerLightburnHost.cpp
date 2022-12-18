@@ -17,8 +17,10 @@
 #include "stb_image.h"
 
 #include "curl/curl.h"
+#include "nlohmann/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 std::filesystem::path targetFile;
 
@@ -47,8 +49,79 @@ static size_t data_write(void* buf, size_t size, size_t nmemb, void* userp)
     return 0;
 }
 
-CURLcode getImageFromSnapmaker(string ipAddress)
+size_t json_callback(char* ptr, size_t size, size_t nmemb, void* userdata) {
+    std::string& data = *static_cast<std::string*>(userdata);
+    size_t len = size * nmemb;
+
+    data.append(ptr, len);
+    return len;
+}
+
+bool IsStatusOk(string jsonResponse)
 {
+    try
+    {
+        json data = json::parse(jsonResponse);
+        return data["status"];
+    }
+    catch (std::exception& e)
+    {
+        std::cout << GetTimeStamp() << "\t-> Error parsing response: " << e.what() << std::endl;
+    }
+}
+
+void ParseThicknessInfo(string jsonResponse)
+{
+    try
+    {
+        json data = json::parse(jsonResponse);
+        auto thickness = (double)data["thickness"];
+        std::cout << GetTimeStamp() << "\t-> Measured material thickness: " << thickness << "mm" << std::endl;
+    }
+    catch(std::exception& e)
+    {
+        std::cout << GetTimeStamp() << "\t-> Error parsing response: " << e.what() << std::endl;
+    }
+}
+
+CURLcode GetMaterialThicknessFromSnapmaker(string ipAddress)
+{
+    std::string printerResponse;
+
+    CURL* matThickness;
+    matThickness = curl_easy_init();
+
+    CURLcode result;
+
+    auto targetUrlRequest = std::format("http://{}:8080/api/request_Laser_Material_Thickness?x=232&y=178&z=290&feedRate=3000", ipAddress);
+
+    std::cout << GetTimeStamp() << "\t-> cURL: Sending request to laser... ";
+
+    curl_easy_setopt(matThickness, CURLOPT_URL, targetUrlRequest.c_str());
+    curl_easy_setopt(matThickness, CURLOPT_HTTPGET, 1);
+    curl_easy_setopt(matThickness, CURLOPT_WRITEDATA, &printerResponse);
+    curl_easy_setopt(matThickness, CURLOPT_WRITEFUNCTION, json_callback);
+    result = curl_easy_perform(matThickness);
+    std::cout << std::endl;
+
+    curl_easy_cleanup(matThickness);
+
+    if (result == CURLE_OK && IsStatusOk(printerResponse))
+    {
+        ParseThicknessInfo(printerResponse);
+    }
+    else
+    {
+        std::cout << GetTimeStamp() << "\tcURL: No valid response from Snapmaker. Make sure the material is positioned under the laser." << std::endl;
+    }
+
+    return result;
+}
+
+CURLcode GetImageFromSnapmaker(string ipAddress)
+{
+    std::string printerResponse;
+
     CURL* cameraPos;
     cameraPos = curl_easy_init();
 
@@ -60,11 +133,14 @@ CURLcode getImageFromSnapmaker(string ipAddress)
     
     curl_easy_setopt(cameraPos, CURLOPT_URL, targetUrlRequest.c_str());
     curl_easy_setopt(cameraPos, CURLOPT_HTTPGET, 1);
-    curl_easy_setopt(cameraPos, CURLOPT_WRITEFUNCTION, NULL);
+    curl_easy_setopt(cameraPos, CURLOPT_WRITEDATA, &printerResponse);
+    curl_easy_setopt(cameraPos, CURLOPT_WRITEFUNCTION, json_callback);
     result = curl_easy_perform(cameraPos);
     std::cout << std::endl;
 
-    if (result == CURLE_OK)
+    curl_easy_cleanup(cameraPos);
+
+    if (result == CURLE_OK && IsStatusOk(printerResponse))
     {
         std::ofstream ofs(targetFile.string(), std::ostream::binary);
 
@@ -86,11 +162,9 @@ CURLcode getImageFromSnapmaker(string ipAddress)
         ofs.close();
     }
 
-    curl_easy_cleanup(cameraPos);
-
     if (result != CURLE_OK)
     {
-        std::cout << GetTimeStamp() <<  "\tcURL: Error retrieving image" << std::endl;
+        std::cout << GetTimeStamp() <<  "\tcURL: No valid response from Snapmaker" << std::endl;
     }
 
     return result;
@@ -99,7 +173,8 @@ CURLcode getImageFromSnapmaker(string ipAddress)
 int main(int argc, char* argv[])
 {
     const char enterASCIIChar = 13;
-    
+    const char spaceASCIIChar = 32;
+
     if (argc <= 1)
     {
         std::cout << "Please pass an IP address as the first argument." << std::endl;
@@ -113,6 +188,7 @@ int main(int argc, char* argv[])
 
     std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {}", ipAddress) << std::endl;
     std::cout << GetTimeStamp() << "Press ENTER to request a new image from base position (warning: will move bed & laser!)" << std::endl;
+    std::cout << GetTimeStamp() << "Press SPACE to request material thickness from base position (warning: will move bed & laser!)" << std::endl;
 
     int width, height, comp;
     auto image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
@@ -129,7 +205,7 @@ int main(int argc, char* argv[])
             {
                 std::cout << GetTimeStamp() << "New image requested, please wait..." << std::endl;
 
-                if (CURLE_OK == getImageFromSnapmaker(ipAddress))
+                if (CURLE_OK == GetImageFromSnapmaker(ipAddress))
                 {
                     image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
 
@@ -137,6 +213,24 @@ int main(int argc, char* argv[])
                         std::cout << GetTimeStamp() << "\t-> STBI: " << stbi_failure_reason() << std::endl;
 
                     std::cout << GetTimeStamp() << "Image sent to virtual camera. Press ENTER to request a new image." << std::endl;
+                }
+                else
+                {
+                    std::cout << GetTimeStamp() << "Failed to retrieve image. Press ENTER to request a new image." << std::endl;
+                }
+            }
+
+            if (pressedChar == spaceASCIIChar)
+            {
+                std::cout << GetTimeStamp() << "Material thickness requested, please wait..." << std::endl;
+
+                if (CURLE_OK == GetMaterialThicknessFromSnapmaker(ipAddress))
+                {
+                    std::cout << GetTimeStamp() << "Material thickness received. Press SPACE to request again." << std::endl;
+                }
+                else
+                {
+                    std::cout << GetTimeStamp() << "Failed to retrieve material thickness. Press SPACE to request again." << std::endl;
                 }
             }
         }
