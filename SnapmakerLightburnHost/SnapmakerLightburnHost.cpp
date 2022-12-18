@@ -3,6 +3,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <conio.h>
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,6 +98,8 @@ CURLcode getImageFromSnapmaker(string ipAddress)
 
 int main(int argc, char* argv[])
 {
+    const char enterASCIIChar = 13;
+    
     if (argc <= 1)
     {
         std::cout << "Please pass an IP address as the first argument." << std::endl;
@@ -118,18 +121,23 @@ int main(int argc, char* argv[])
     {
         scSendFrame(cam, image);
         
-        if (GetKeyState(VK_RETURN) & 0x8000)
+        if (_kbhit())
         {
-            std::cout << GetTimeStamp() << "New image requested, please wait..." << std::endl;
+            auto pressedChar = _getch();
 
-            if (CURLE_OK == getImageFromSnapmaker(ipAddress))
+            if (pressedChar == enterASCIIChar)
             {
-                image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
+                std::cout << GetTimeStamp() << "New image requested, please wait..." << std::endl;
 
-                if (stbi_failure_reason() && (string("bad png sig").compare(stbi_failure_reason()) != 0))
-                    std::cout << GetTimeStamp() << "\t-> STBI: " << stbi_failure_reason() << std::endl;
+                if (CURLE_OK == getImageFromSnapmaker(ipAddress))
+                {
+                    image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
 
-                std::cout << GetTimeStamp() << "Image sent to virtual camera. Press ENTER to request a new image." << std::endl;
+                    if (stbi_failure_reason() && (string("bad png sig").compare(stbi_failure_reason()) != 0))
+                        std::cout << GetTimeStamp() << "\t-> STBI: " << stbi_failure_reason() << std::endl;
+
+                    std::cout << GetTimeStamp() << "Image sent to virtual camera. Press ENTER to request a new image." << std::endl;
+                }
             }
         }
     }
