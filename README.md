@@ -5,6 +5,7 @@ Using the method described by [**Slynold**](https://forum.snapmaker.com/u/slynol
 
 # Dependencies (included or NuGet)
 1. https://github.com/tshino/softcam: virtual DirectShow camera.
+1. https://github.com/nlohmann/json: JSON parser.
 2. https://github.com/nothings/stb: ```stb_image.h``` for simple JPEG loading (note: modified with RGB -> BGR swap).
 3. libcurl, libssh, openssl, zlib
 
@@ -17,5 +18,6 @@ Note: Above libraries (static and dynamic) are included in this project for ease
 4. In LightBurn settings, verify that ```Default Capture System``` is selected under ```Camera Capture System```.
 5. In LightBurn, select ```DirectShow Softcam``` as your camera.
 6. Press ```ENTER``` to request a new image from your Snapmaker 10W laser camera.
+6. Press ```SPACE``` to perform a material thickness measurement with your Snapmaker 10W laser camera.
 
 ![image](https://user-images.githubusercontent.com/6267267/208189576-714fb93c-bdfe-40b4-af4a-2651109a5746.png)
