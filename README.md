@@ -1,4 +1,5 @@
-# Snapmaker LightBurn Host
+# Snapmaker LightBurn Host 
+[![Windows Visual Studio Build Status](https://img.shields.io/appveyor/ci/PolymerPrints/snapmakerlightburnhost/master.svg?label=build)](https://ci.appveyor.com/project/PolymerPrints/snapmakerlightburnhost)    
 Tool that allows you to use your Snapmaker 2.0 10W laser in LightBurn. 
 
 Using the method described by [**Slynold**](https://forum.snapmaker.com/u/slynold) (https://forum.snapmaker.com/t/working-camera-capture-with-lightburn/28397).
