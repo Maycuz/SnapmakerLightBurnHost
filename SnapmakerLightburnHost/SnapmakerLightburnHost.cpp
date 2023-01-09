@@ -22,7 +22,15 @@
 using namespace std;
 using json = nlohmann::json;
 
-std::filesystem::path targetFile;
+struct UserConfig
+{
+    std::string ipAddress = "";
+    double basePositionX = 232.0;
+    double basePositionY = 178.0;
+    double basePositionZ = 290.0;
+};
+
+UserConfig activeConfig;
 
 string GetTimeStamp()
 {
@@ -61,7 +69,7 @@ bool IsStatusOk(string jsonResponse)
 {
     try
     {
-        json data = json::parse(jsonResponse);
+        auto data = json::parse(jsonResponse);
         return data["status"];
     }
     catch (std::exception& e)
@@ -74,7 +82,7 @@ void ParseThicknessInfo(string jsonResponse)
 {
     try
     {
-        json data = json::parse(jsonResponse);
+        auto data = json::parse(jsonResponse);
         auto thickness = (double)data["thickness"];
         std::cout << GetTimeStamp() << "\t-> Measured material thickness: " << thickness << "mm" << std::endl;
     }
@@ -88,12 +96,12 @@ CURLcode GetMaterialThicknessFromSnapmaker(string ipAddress)
 {
     std::string printerResponse;
 
-    CURL* matThickness;
-    matThickness = curl_easy_init();
+    auto matThickness = curl_easy_init();
 
     CURLcode result;
 
-    auto targetUrlRequest = std::format("http://{}:8080/api/request_Laser_Material_Thickness?x=232&y=178&z=290&feedRate=3000", ipAddress);
+    auto targetUrlRequest = std::format("http://{}:8080/api/request_Laser_Material_Thickness?x={}&y={}&z={}&feedRate=3000", ipAddress, 
+        activeConfig.basePositionX, activeConfig.basePositionY, activeConfig.basePositionZ);
 
     std::cout << GetTimeStamp() << "\t-> cURL: Sending request to laser... ";
 
@@ -112,22 +120,22 @@ CURLcode GetMaterialThicknessFromSnapmaker(string ipAddress)
     }
     else
     {
-        std::cout << GetTimeStamp() << "\tcURL: No valid response from Snapmaker. Make sure the material is positioned under the laser." << std::endl;
+        std::cout << GetTimeStamp() << "\t-> cURL: No valid response from Snapmaker. Make sure the material is positioned under the laser." << std::endl;
     }
 
     return result;
 }
 
-CURLcode GetImageFromSnapmaker(string ipAddress)
+CURLcode GetImageFromSnapmaker(string ipAddress, string tempImageFile)
 {
     std::string printerResponse;
 
-    CURL* cameraPos;
-    cameraPos = curl_easy_init();
+    auto cameraPos = curl_easy_init();
 
     CURLcode result;
 
-    auto targetUrlRequest = std::format("http://{}:8080/api/request_capture_photo?index=0&x=232&y=178&z=290&feedRate=3000&photoQuality=0", ipAddress);
+    auto targetUrlRequest = std::format("http://{}:8080/api/request_capture_photo?index=0&x={}&y={}&z={}&feedRate=3000&photoQuality=0", ipAddress,
+        activeConfig.basePositionX, activeConfig.basePositionY, activeConfig.basePositionZ);
     
     std::cout << GetTimeStamp() << "\t-> cURL: Sending request to camera... ";
     
@@ -142,7 +150,7 @@ CURLcode GetImageFromSnapmaker(string ipAddress)
 
     if (result == CURLE_OK && IsStatusOk(printerResponse))
     {
-        std::ofstream ofs(targetFile.string(), std::ostream::binary);
+        std::ofstream ofs(tempImageFile, std::ostream::binary);
 
         CURL* cameraImage;
         cameraImage = curl_easy_init();
@@ -164,10 +172,59 @@ CURLcode GetImageFromSnapmaker(string ipAddress)
 
     if (result != CURLE_OK)
     {
-        std::cout << GetTimeStamp() <<  "\tcURL: No valid response from Snapmaker" << std::endl;
+        std::cout << GetTimeStamp() <<  "\t-> cURL: No valid response from Snapmaker" << std::endl;
     }
 
     return result;
+}
+
+bool CreateConfigFile(string filepath, string targetIp)
+{
+    try
+    {
+        std::ofstream f(filepath);
+
+        json defaultData = {
+            { "ipAddress", targetIp },
+            { "basePositionX", activeConfig.basePositionX },
+            { "basePositionY", activeConfig.basePositionY },
+            { "basePositionZ", activeConfig.basePositionZ },
+        };
+
+        f << std::setw(4) << defaultData << std::endl;
+        f.close();
+
+        return true;
+    }
+    catch (std::exception& e)
+    {
+        std::cout << GetTimeStamp() << "\t-> Error writing config file: " << e.what() << std::endl;
+        return false;
+    }
+}
+
+bool ReadUserConfig(string filepath, UserConfig& config)
+{
+    if (!std::filesystem::exists(filepath))
+        return false;
+
+    try
+    {
+        std::ifstream f(filepath);
+        json data = json::parse(f);
+
+        config.ipAddress = data["ipAddress"];
+        config.basePositionX = data["basePositionX"];
+        config.basePositionY = data["basePositionY"];
+        config.basePositionZ = data["basePositionZ"];
+
+        return true;
+    }
+    catch (std::exception& e)
+    {
+        std::cout << GetTimeStamp() << "\t-> Error parsing config file: " << e.what() << std::endl;
+        return false;
+    }
 }
 
 int main(int argc, char* argv[])
@@ -175,23 +232,33 @@ int main(int argc, char* argv[])
     const char enterASCIIChar = 13;
     const char spaceASCIIChar = 32;
 
-    if (argc <= 1)
+    const auto tempImageFile = std::filesystem::current_path() / "latest.jpg";
+    const auto configFile = std::filesystem::current_path() / "config.json";
+        
+    if (!ReadUserConfig(configFile.string(), activeConfig))
     {
-        std::cout << "Please pass an IP address as the first argument." << std::endl;
-        exit(1);
+        if (argc <= 1)
+        {
+            std::cout << "Please pass an IP address as the first argument (or use config.json)" << std::endl;
+            CreateConfigFile(configFile.string(), "0.0.0.0");
+            exit(1);
+        }
+        else
+        {
+            activeConfig.ipAddress = string(argv[1]);
+            CreateConfigFile(configFile.string(), activeConfig.ipAddress);
+        }
     }
 
-    auto ipAddress = string(argv[1]);
+    auto cam = scCreateCamera(1024, 1280, 60);
 
-    targetFile = std::filesystem::current_path() / "latest.jpg";
-    scCamera cam = scCreateCamera(1024, 1280, 60);
-
-    std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {}", ipAddress) << std::endl;
+    std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {} (base position: X{}, Y{}, Z{})", activeConfig.ipAddress,
+        activeConfig.basePositionX, activeConfig.basePositionY, activeConfig.basePositionZ) << std::endl;
     std::cout << GetTimeStamp() << "Press ENTER to request a new image from base position (warning: will move bed & laser!)" << std::endl;
     std::cout << GetTimeStamp() << "Press SPACE to request material thickness from base position (warning: will move bed & laser!)" << std::endl;
 
     int width, height, comp;
-    auto image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
+    auto image = stbi_load(tempImageFile.string().c_str(), &width, &height, &comp, 0);
 
     for (;;)
     {
@@ -205,12 +272,12 @@ int main(int argc, char* argv[])
             {
                 std::cout << GetTimeStamp() << "New image requested, please wait..." << std::endl;
 
-                if (CURLE_OK == GetImageFromSnapmaker(ipAddress))
+                if (CURLE_OK == GetImageFromSnapmaker(activeConfig.ipAddress, tempImageFile.string()))
                 {
-                    image = stbi_load(targetFile.string().c_str(), &width, &height, &comp, 0);
+                    image = stbi_load(tempImageFile.string().c_str(), &width, &height, &comp, 0);
 
                     if (stbi_failure_reason() && (string("bad png sig").compare(stbi_failure_reason()) != 0))
-                        std::cout << GetTimeStamp() << "\t-> STBI: " << stbi_failure_reason() << std::endl;
+                        std::cout << GetTimeStamp() << "\t-> STBI error: " << stbi_failure_reason() << std::endl;
 
                     std::cout << GetTimeStamp() << "Image sent to virtual camera. Press ENTER to request a new image." << std::endl;
                 }
@@ -224,7 +291,7 @@ int main(int argc, char* argv[])
             {
                 std::cout << GetTimeStamp() << "Material thickness requested, please wait..." << std::endl;
 
-                if (CURLE_OK == GetMaterialThicknessFromSnapmaker(ipAddress))
+                if (CURLE_OK == GetMaterialThicknessFromSnapmaker(activeConfig.ipAddress))
                 {
                     std::cout << GetTimeStamp() << "Material thickness received. Press SPACE to request again." << std::endl;
                 }
