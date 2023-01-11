@@ -28,7 +28,7 @@ Note: Above libraries (static and dynamic) are included in this project for ease
 6. Press ```ENTER``` to request a new image from your Snapmaker 10W laser camera.
 6. Press ```SPACE``` to perform a material thickness measurement with your Snapmaker 10W laser camera.
 
-The coordinates where the laser will "park" to take a picture can be configured in `config.json`. Suggested coordinates:
+The coordinates where the laser will "park" to take a picture can be configured in `config.json`. Suggested coordinates (thanks to Slynold & theevl):
 
 | Machine  | Coordinates |
 | ------------- | ------------- |
