@@ -35,4 +35,3 @@ The coordinates where the laser will "park" to take a picture can be configured 
 | Snapmaker 2.0 A350  | X: 232.0 Y: 178.0 Z: 290.0 |
 | Snapmaker 2.0 A250  | X: 160.0 Y: 120.0 Z: 175.0 |
 | Snapmaker 2.0 A150  | ???  |
-| Snapmaker Original  | ???  |
