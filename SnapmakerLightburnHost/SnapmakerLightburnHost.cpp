@@ -252,8 +252,16 @@ int main(int argc, char* argv[])
 
     auto cam = scCreateCamera(1024, 1280, 60);
 
+    // Pre-requisites instruction text
+    std::cout << " ================================================================================" << std::endl;
+    std::cout << "| Please manually execute the following GCode (in order) before using this tool: |" << std::endl;
+    std::cout << "|    1. G28 (home axes)                                                          |" << std::endl;
+    std::cout << "|    2. G54 (switch to workspace coordinates)                                    |" << std::endl;
+    std::cout << " ================================================================================" << std::endl << std::endl;
+
     std::cout << GetTimeStamp() << std::format("Virtual camera has started @ {} (base position: X{}, Y{}, Z{})", activeConfig.ipAddress,
         activeConfig.basePositionX, activeConfig.basePositionY, activeConfig.basePositionZ) << std::endl;
+
     std::cout << GetTimeStamp() << "Press ENTER to request a new image from base position (warning: will move bed & laser!)" << std::endl;
     std::cout << GetTimeStamp() << "Press SPACE to request material thickness from base position (warning: will move bed & laser!)" << std::endl;
 
